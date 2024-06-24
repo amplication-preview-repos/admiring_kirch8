@@ -21,11 +21,8 @@ import { AclFilterResponseInterceptor } from "../../interceptors/aclFilterRespon
 import { AclValidateRequestInterceptor } from "../../interceptors/aclValidateRequest.interceptor";
 import { Organization } from "./Organization";
 import { OrganizationCountArgs } from "./OrganizationCountArgs";
-import { OrganizationFindManyArgs } from "./OrganizationFindManyArgs";
 import { OrganizationFindUniqueArgs } from "./OrganizationFindUniqueArgs";
-import { CreateOrganizationArgs } from "./CreateOrganizationArgs";
 import { UpdateOrganizationArgs } from "./UpdateOrganizationArgs";
-import { DeleteOrganizationArgs } from "./DeleteOrganizationArgs";
 import { OrganizationService } from "../organization.service";
 @common.UseGuards(GqlDefaultAuthGuard, gqlACGuard.GqlACGuard)
 @graphql.Resolver(() => Organization)
@@ -51,19 +48,6 @@ export class OrganizationResolverBase {
   }
 
   @common.UseInterceptors(AclFilterResponseInterceptor)
-  @graphql.Query(() => [Organization])
-  @nestAccessControl.UseRoles({
-    resource: "Organization",
-    action: "read",
-    possession: "any",
-  })
-  async organizations(
-    @graphql.Args() args: OrganizationFindManyArgs
-  ): Promise<Organization[]> {
-    return this.service.organizations(args);
-  }
-
-  @common.UseInterceptors(AclFilterResponseInterceptor)
   @graphql.Query(() => Organization, { nullable: true })
   @nestAccessControl.UseRoles({
     resource: "Organization",
@@ -84,22 +68,6 @@ export class OrganizationResolverBase {
   @graphql.Mutation(() => Organization)
   @nestAccessControl.UseRoles({
     resource: "Organization",
-    action: "create",
-    possession: "any",
-  })
-  async createOrganization(
-    @graphql.Args() args: CreateOrganizationArgs
-  ): Promise<Organization> {
-    return await this.service.createOrganization({
-      ...args,
-      data: args.data,
-    });
-  }
-
-  @common.UseInterceptors(AclValidateRequestInterceptor)
-  @graphql.Mutation(() => Organization)
-  @nestAccessControl.UseRoles({
-    resource: "Organization",
     action: "update",
     possession: "any",
   })
@@ -111,27 +79,6 @@ export class OrganizationResolverBase {
         ...args,
         data: args.data,
       });
-    } catch (error) {
-      if (isRecordNotFoundError(error)) {
-        throw new GraphQLError(
-          `No resource was found for ${JSON.stringify(args.where)}`
-        );
-      }
-      throw error;
-    }
-  }
-
-  @graphql.Mutation(() => Organization)
-  @nestAccessControl.UseRoles({
-    resource: "Organization",
-    action: "delete",
-    possession: "any",
-  })
-  async deleteOrganization(
-    @graphql.Args() args: DeleteOrganizationArgs
-  ): Promise<Organization | null> {
-    try {
-      return await this.service.deleteOrganization(args);
     } catch (error) {
       if (isRecordNotFoundError(error)) {
         throw new GraphQLError(

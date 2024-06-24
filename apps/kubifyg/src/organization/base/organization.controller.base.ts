@@ -19,12 +19,10 @@ import { ApiNestedQuery } from "../../decorators/api-nested-query.decorator";
 import * as nestAccessControl from "nest-access-control";
 import * as defaultAuthGuard from "../../auth/defaultAuth.guard";
 import { OrganizationService } from "../organization.service";
-import { AclValidateRequestInterceptor } from "../../interceptors/aclValidateRequest.interceptor";
 import { AclFilterResponseInterceptor } from "../../interceptors/aclFilterResponse.interceptor";
-import { OrganizationCreateInput } from "./OrganizationCreateInput";
-import { Organization } from "./Organization";
-import { OrganizationFindManyArgs } from "./OrganizationFindManyArgs";
+import { AclValidateRequestInterceptor } from "../../interceptors/aclValidateRequest.interceptor";
 import { OrganizationWhereUniqueInput } from "./OrganizationWhereUniqueInput";
+import { Organization } from "./Organization";
 import { OrganizationUpdateInput } from "./OrganizationUpdateInput";
 
 @swagger.ApiBearerAuth()
@@ -34,55 +32,6 @@ export class OrganizationControllerBase {
     protected readonly service: OrganizationService,
     protected readonly rolesBuilder: nestAccessControl.RolesBuilder
   ) {}
-  @common.UseInterceptors(AclValidateRequestInterceptor)
-  @common.Post()
-  @swagger.ApiCreatedResponse({ type: Organization })
-  @nestAccessControl.UseRoles({
-    resource: "Organization",
-    action: "create",
-    possession: "any",
-  })
-  @swagger.ApiForbiddenResponse({
-    type: errors.ForbiddenException,
-  })
-  async createOrganization(
-    @common.Body() data: OrganizationCreateInput
-  ): Promise<Organization> {
-    return await this.service.createOrganization({
-      data: data,
-      select: {
-        createdAt: true,
-        id: true,
-        name: true,
-        updatedAt: true,
-      },
-    });
-  }
-
-  @common.UseInterceptors(AclFilterResponseInterceptor)
-  @common.Get()
-  @swagger.ApiOkResponse({ type: [Organization] })
-  @ApiNestedQuery(OrganizationFindManyArgs)
-  @nestAccessControl.UseRoles({
-    resource: "Organization",
-    action: "read",
-    possession: "any",
-  })
-  @swagger.ApiForbiddenResponse({
-    type: errors.ForbiddenException,
-  })
-  async organizations(@common.Req() request: Request): Promise<Organization[]> {
-    const args = plainToClass(OrganizationFindManyArgs, request.query);
-    return this.service.organizations({
-      ...args,
-      select: {
-        createdAt: true,
-        id: true,
-        name: true,
-        updatedAt: true,
-      },
-    });
-  }
 
   @common.UseInterceptors(AclFilterResponseInterceptor)
   @common.Get("/:id")
@@ -136,40 +85,6 @@ export class OrganizationControllerBase {
       return await this.service.updateOrganization({
         where: params,
         data: data,
-        select: {
-          createdAt: true,
-          id: true,
-          name: true,
-          updatedAt: true,
-        },
-      });
-    } catch (error) {
-      if (isRecordNotFoundError(error)) {
-        throw new errors.NotFoundException(
-          `No resource was found for ${JSON.stringify(params)}`
-        );
-      }
-      throw error;
-    }
-  }
-
-  @common.Delete("/:id")
-  @swagger.ApiOkResponse({ type: Organization })
-  @swagger.ApiNotFoundResponse({ type: errors.NotFoundException })
-  @nestAccessControl.UseRoles({
-    resource: "Organization",
-    action: "delete",
-    possession: "any",
-  })
-  @swagger.ApiForbiddenResponse({
-    type: errors.ForbiddenException,
-  })
-  async deleteOrganization(
-    @common.Param() params: OrganizationWhereUniqueInput
-  ): Promise<Organization | null> {
-    try {
-      return await this.service.deleteOrganization({
-        where: params,
         select: {
           createdAt: true,
           id: true,
